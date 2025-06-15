@@ -27,6 +27,7 @@ const extractedReceivables = await Promise.all(
       return {
         ...result,
         filePath: relative(dataDir, filePath),
+        year: relative(dataDir, file.parentPath),
       };
     })
 );
