@@ -9,7 +9,7 @@ export interface ExtractTopReceivablesResult {
   text?: string;
 }
 
-export async function extractTopReceivables(
+export async function extractTopReceivable(
   filePath: string
 ): Promise<ExtractTopReceivablesResult> {
   const text = await Bun.file(filePath).text();
@@ -39,10 +39,13 @@ export const TopReceivable = z.object({
   percentageOfTotal: z.number().nullable(),
 });
 
-export async function generateTopReceivables({
+export async function generateTopReceivable({
   model,
   prompt,
-}: Parameters<typeof generateObject>[0]) {
+}: {
+  model: Parameters<typeof generateObject>[0]["model"];
+  prompt: string;
+}) {
   return await generateObject({
     model,
     schema: z.object({
