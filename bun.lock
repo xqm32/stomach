@@ -6,6 +6,7 @@
       "dependencies": {
         "@ai-sdk/openai-compatible": "^0.2.14",
         "ai": "^4.3.16",
+        "zod": "^3.25.64",
       },
       "devDependencies": {
         "@types/bun": "latest",
