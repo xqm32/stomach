@@ -46,22 +46,32 @@ export async function generateTopReceivable({
   model: Parameters<typeof generateObject>[0]["model"];
   prompt: string;
 }) {
+  prompt = prompt.slice(0, 1000);
+
   return await generateObject({
     model,
     schema: z.object({
       hasTopReceivables: z.boolean(),
       topReceivables: z.array(TopReceivable),
+      isComplete: z.boolean(),
     }),
     prompt: `
-Given the following OCR-extracted text from a Chinese listed company's annual report PDF, extract the table for "按欠款方归集的期末余额前五名的应收账款" (Top 5 accounts receivable by debtor at period end). 
-Return an array of up to 5 objects with these fields:
-- debtorName: the name of the debtor (string)
-- isMasked: true if the debtor name is masked or anonymized (e.g., "公司一", "客户1"), false otherwise
-- endingBalance: the ending balance for this debtor (number, or null if not available)
-- percentageOfTotal: the percentage of total receivables (number, or null if not available)
-
-If the table is not found, set hasTopReceivables to false and topReceivables to an empty array.
-If found, set hasTopReceivables to true and fill topReceivables accordingly.
+Given the following OCR-extracted text from a Chinese listed company's annual report PDF, extract the table for "按欠款方归集的期末余额前五名的应收账款" (Top 5 accounts receivable by debtor at period end).
+Return an object with these fields:
+- hasTopReceivables: true if the table is found, false otherwise
+- topReceivables: an array (up to 5) of objects with:
+  - debtorName: the name of the debtor (string)
+  - isMasked: true if the debtor name is masked or anonymized (e.g., "公司一", "客户1"), false otherwise
+  - endingBalance: the ending balance for this debtor (number, or null if not available)
+  - percentageOfTotal: the percentage of total receivables (number, or null if not available)
+- isComplete: true if the destination table "按欠款方归集的期末余额前五名的应收账款" is fully extracted and not truncated; set isComplete to false only if this specific table is present but appears to be truncated or incomplete due to the prompt being cut off. If the table is missing entirely, set isComplete to true.
+Clarification for isComplete:
+- Set isComplete to false ONLY if the table "按欠款方归集的期末余额前五名的应收账款" is present in the text but appears to be truncated or incomplete specifically because the provided prompt was cut off (for example, the table is interrupted mid-row or ends abruptly due to prompt length).
+- If the table is present and is followed by the next section header (such as "(6)" or another heading), or if the table appears to be fully listed as in the original document (even if the table itself is incomplete in the source), set isComplete to true.
+- If the table is missing entirely, set isComplete to true.
+- Do NOT set isComplete to false for cases where the table is incomplete in the original document or only contains partial data; only set it to false if the extraction was cut off due to prompt length.
+If the table is not found, set hasTopReceivables to false, topReceivables to an empty array, and isComplete to true.
+If found, set hasTopReceivables to true, fill topReceivables accordingly, and set isComplete to false only if the extracted table is incomplete or truncated due to the prompt being cut off.
 
 Text:
 """${prompt}"""
