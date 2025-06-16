@@ -46,8 +46,6 @@ export async function generateTopReceivable({
   model: Parameters<typeof generateObject>[0]["model"];
   prompt: string;
 }) {
-  prompt = prompt.slice(0, 1000);
-
   return await generateObject({
     model,
     schema: z.object({

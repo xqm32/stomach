@@ -49,7 +49,7 @@ const receivables = await Promise.all(
         );
         receivable = await generateTopReceivable({
           model: siliconflow("Pro/deepseek-ai/DeepSeek-V3"),
-          prompt: result.text!,
+          prompt: result.text!.slice(0, 1000),
         });
       } catch (error) {
         console.error(
@@ -65,7 +65,7 @@ const receivables = await Promise.all(
       }
 
       console.log(
-        `Generated top receivables for ${result.filePath} (${result.year})`
+        `Generated top receivables for ${result.filePath} (${result.year}) used ${receivable.usage.totalTokens} tokens`
       );
       return {
         ...result,
