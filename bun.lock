@@ -11,6 +11,7 @@
       },
       "devDependencies": {
         "@types/bun": "latest",
+        "@types/lodash": "^4.17.19",
       },
       "peerDependencies": {
         "typescript": "^5",
@@ -33,6 +34,8 @@
     "@types/bun": ["@types/bun@1.2.16", "", { "dependencies": { "bun-types": "1.2.16" } }, "sha512-1aCZJ/6nSiViw339RsaNhkNoEloLaPzZhxMOYEa7OzRzO41IGg5n/7I43/ZIAW/c+Q6cT12Vf7fOZOoVIzb5BQ=="],
 
     "@types/diff-match-patch": ["@types/diff-match-patch@1.0.36", "", {}, "sha512-xFdR6tkm0MWvBfO8xXCSsinYxHcqkQUlcHeSpMC2ukzOb6lwQAfDmW+Qt0AvlGd8HpsS28qKsB+oPeJn9I39jg=="],
+
+    "@types/lodash": ["@types/lodash@4.17.19", "", {}, "sha512-NYqRyg/hIQrYPT9lbOeYc3kIRabJDn/k4qQHIXUpx88CBDww2fD15Sg5kbXlW86zm2XEW4g0QxkTI3/Kfkc7xQ=="],
 
     "@types/node": ["@types/node@24.0.1", "", { "dependencies": { "undici-types": "~7.8.0" } }, "sha512-MX4Zioh39chHlDJbKmEgydJDS3tspMP/lnQC67G3SWsTnb9NeYVWOjkxpOSy4oMfPs4StcWHwBrvUb4ybfnuaw=="],
 
