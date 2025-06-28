@@ -14,3 +14,17 @@ const results = (await Bun.file(
   process.env.RECEIVABLES_FILE
 ).json()) as Result[];
 const receivables = results.filter(hasTopReceivables);
+
+const part = receivables
+  .slice(0, 100)
+  .map((r) => ({
+    filePath: r.filePath,
+    ...r.topReceivables,
+  }))
+  .filter((r) => r.hasTopReceivables)
+  .map((r) => ({
+    filePath: r.filePath,
+    ...r.topReceivables,
+  }));
+
+console.log(part);
