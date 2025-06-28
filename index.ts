@@ -1,5 +1,5 @@
 import { readdir } from "node:fs/promises";
-import { relative } from "node:path";
+import { basename, relative } from "node:path";
 import { siliconflow } from "./ai";
 import { extractTopReceivable, generateTopReceivable } from "./receivables";
 
@@ -14,6 +14,7 @@ export async function generateReceivables(directory: string) {
       .filter((file) => file.isFile() && file.name.endsWith(".txt"))
       .map(async (file) => {
         const filePath = `${file.parentPath}/${file.name}`;
+        // const result = await extractTopReceivable2014orLater(filePath);
         const result = await extractTopReceivable(filePath);
         return {
           ...result,
@@ -23,9 +24,14 @@ export async function generateReceivables(directory: string) {
       })
   );
 
-  await Bun.write("loaded.json", JSON.stringify(loaded, null, 2));
+  await Bun.write(
+    `${basename(directory)}-loaded.json`,
+    JSON.stringify(loaded, null, 2)
+  );
 
+  let errorCount = 0;
   let totalTokens = 0;
+
   const receivables = await Promise.all(
     loaded
       .filter((result) => result.hasTopReceivables && result.text)
@@ -45,6 +51,7 @@ export async function generateReceivables(directory: string) {
             `Failed to generate top receivables for ${result.filePath} (${result.year}):`,
             error
           );
+          errorCount++;
           return {
             ...result,
             error: `Failed to generate top receivables: ${
@@ -66,6 +73,11 @@ export async function generateReceivables(directory: string) {
       })
   );
 
+  if (errorCount > 0) {
+    console.error(
+      `Encountered ${errorCount} errors while generating top receivables.`
+    );
+  }
   console.log(
     `Generated top receivables for ${
       receivables.length
@@ -73,7 +85,10 @@ export async function generateReceivables(directory: string) {
       totalTokens / receivables.length
     } tokens per file.`
   );
-  await Bun.write("receivables.json", JSON.stringify(receivables, null, 2));
+  await Bun.write(
+    `${basename(directory)}-receivables.json`,
+    JSON.stringify(receivables, null, 2)
+  );
 
   return receivables;
 }
@@ -82,4 +97,10 @@ if (!process.env.DATA_DIR) {
   throw new Error("DATA_DIR environment variable is not set");
 }
 const dataDir = process.env.DATA_DIR;
-await generateReceivables(dataDir);
+const directories = await readdir(dataDir, { withFileTypes: true });
+for (const dir of directories) {
+  if (dir.isDirectory()) {
+    console.log(`Processing directory: ${dir.name}`);
+    await generateReceivables(`${dataDir}/${dir.name}`);
+  }
+}

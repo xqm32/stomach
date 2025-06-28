@@ -6,10 +6,42 @@ export interface ExtractTopReceivablesResult {
   hasTopReceivables: boolean;
 
   lineno?: number;
+  startPos?: number;
   text?: string;
 }
 
 export async function extractTopReceivable(
+  filePath: string
+): Promise<ExtractTopReceivablesResult> {
+  const text = await Bun.file(filePath).text();
+  const lines = text.split("\n");
+
+  for (const [lineno, line] of lines.entries()) {
+    const hasTopReceivables =
+      line.includes("前五名") && line.includes("应收账款");
+    const startPos = Math.min(line.indexOf("前五名"), line.indexOf("应收账款"));
+
+    if (hasTopReceivables) {
+      return {
+        filePath,
+        hasTopReceivables: true,
+
+        lineno: lineno + 1,
+        startPos: startPos,
+        text: lines
+          .slice(lineno, lineno + 200)
+          .join("\n")
+          .slice(startPos - 20, startPos + 1000),
+      };
+    }
+  }
+  return {
+    filePath,
+    hasTopReceivables: false,
+  };
+}
+
+export async function extractTopReceivable2014orLater(
   filePath: string
 ): Promise<ExtractTopReceivablesResult> {
   const text = await Bun.file(filePath).text();
