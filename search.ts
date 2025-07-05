@@ -23,3 +23,22 @@ async function search(name: string) {
   );
   return result;
 }
+
+async function searchYear(name: string, year: number) {
+  const { embedding, usage } = await embed({
+    model: siliconflow.textEmbeddingModel("Qwen/Qwen3-Embedding-0.6B"),
+    value: name,
+  });
+  const result = await client.query(`${collection}-${year}`, {
+    query: embedding,
+    with_payload: true,
+  });
+  console.log(
+    `Search results for "${name}":`,
+    result.points.map((point) => ({
+      score: point.score,
+      ...point.payload!,
+    }))
+  );
+  return result;
+}

@@ -2,6 +2,7 @@ import { QdrantClient } from "@qdrant/js-client-rest";
 import { embedMany } from "ai";
 import _, { uniqueId } from "lodash";
 import { siliconflow } from "./ai";
+import { subsInYear } from "./db";
 
 async function loadSubs() {
   const sub = (await Bun.file("origin/sub.csv").text())
@@ -82,4 +83,52 @@ async function insertSubs() {
   await Bun.write("origin/results.json", JSON.stringify(results, null, 2));
 }
 
-await insertSubs();
+// await insertSubs();
+
+async function insertSubsYear(year: number) {
+  const deleteResult = await client.deleteCollection(`${collection}-${year}`);
+  console.log(deleteResult);
+  const createResult = await client.createCollection(`${collection}-${year}`, {
+    vectors: { size: 1024, distance: "Cosine" },
+  });
+  console.log(createResult);
+
+  const subs = await subsInYear(year);
+  const chunks = _.chunk(subs, 32);
+
+  const results = await Promise.all(
+    chunks.map(async (chunk, index) => {
+      console.log(`Embedding chunk ${index + 1} of ${chunks.length}...`);
+      const result = await embedChunk(chunk);
+      if ("error" in result) {
+        console.error(`Error embedding chunk ${index + 1}:`, result.error);
+        return { index, ...result };
+      }
+      console.log(`Embedded chunk ${index + 1} of ${chunks.length}`);
+
+      console.log(`Upserting chunk ${index + 1} of ${chunks.length}...`);
+      const { embeddings, usage } = result;
+      const upsertResult = await client.upsert(`${collection}-${year}`, {
+        wait: true,
+        points: chunk.map((item, i) => ({
+          id: index * 32 + i,
+          vector: embeddings[i] as number[],
+          payload: {
+            name: item.name,
+            code: item.code,
+          },
+        })),
+      });
+      console.log(`Upserted chunk ${index + 1} of ${chunks.length}`);
+
+      return { index, usage, ...upsertResult };
+    })
+  );
+
+  await Bun.write(
+    `origin/results-${year}.json`,
+    JSON.stringify(results, null, 2)
+  );
+}
+
+await insertSubsYear(2023);
