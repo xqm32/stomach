@@ -1,7 +1,11 @@
 import { readdir } from "node:fs/promises";
 import { basename, relative } from "node:path";
 import { siliconflow } from "./ai";
-import { extractTopReceivable, generateTopReceivable } from "./receivables";
+import {
+  extractTopReceivable,
+  extractTopReceivable2014orLater,
+  generateTopReceivable,
+} from "./receivables";
 
 export async function generateReceivables(directory: string) {
   const files = await readdir(directory, {
@@ -15,7 +19,7 @@ export async function generateReceivables(directory: string) {
       .map(async (file) => {
         const filePath = `${file.parentPath}/${file.name}`;
         // const result = await extractTopReceivable2014orLater(filePath);
-        const result = await extractTopReceivable(filePath);
+        const result = await extractTopReceivable2014orLater(filePath);
         return {
           ...result,
           filePath: relative(dataDir, filePath),

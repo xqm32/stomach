@@ -24,7 +24,7 @@ async function search(name: string) {
   return result;
 }
 
-async function searchYear(name: string, year: number) {
+export async function searchYear(name: string, year: number) {
   const { embedding, usage } = await embed({
     model: siliconflow.textEmbeddingModel("Qwen/Qwen3-Embedding-0.6B"),
     value: name,
@@ -33,12 +33,16 @@ async function searchYear(name: string, year: number) {
     query: embedding,
     with_payload: true,
   });
-  console.log(
-    `Search results for "${name}":`,
-    result.points.map((point) => ({
-      score: point.score,
-      ...point.payload!,
-    }))
-  );
-  return result;
+  // console.log(
+  //   `Search results for "${name}":`,
+  //   result.points.map((point) => ({
+  //     score: point.score,
+  //     ...point.payload!,
+  //   }))
+  // );
+  // return result;
+  return result.points.map((point) => ({
+    score: point.score,
+    ...point.payload!,
+  }))[0];
 }

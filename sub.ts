@@ -131,4 +131,8 @@ async function insertSubsYear(year: number) {
   );
 }
 
-await insertSubsYear(2023);
+for (let year = 2012; year <= 2023; year++) {
+  console.log(`Loading receivables for year ${year}...`);
+  await insertSubsYear(year);
+  console.log(`Finished loading receivables for year ${year}`);
+}
